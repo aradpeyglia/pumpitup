@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <script async src="https://api.glia.com/salemove_integration.js"></script>
+    <script async src="https://api.glia.com/salemove_integration.js"></script>
     <title>Clicklab</title>
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 
@@ -43,6 +43,22 @@
         width: 260px;
         margin-bottom: 30px;
       }
+
+      /* Basic styling for the new button */
+      .omnibrowse-code-button {
+        background-color: #FFD642;
+        color: #0A3D91;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-top: 20px; /* Add some space above the button */
+      }
+
+      .omnibrowse-code-button:hover {
+        opacity: 0.9;
+      }
     </style>
   </head>
 
@@ -52,6 +68,22 @@
       <h1>Welcome to Clicklab</h1>
       <p>This is a simple demo page to test basic navigation and layout. Nothing complicated. Just a clean space to try things out.</p>
       <a href="index2.html">Go to the next page</a>
+
+      <button class="omnibrowse-code-button">Get CoBrowsing code</button>
     </div>
+
+    <script>
+      function showVisitorCode() {
+        // Create the custom Glia HTML element for the visitor code
+        var code = document.createElement('sm-visitor-code');
+        // Append the element to the body, making the code visible
+        document.body.appendChild(code);
+      }
+
+      // Add a "click" event listener to the button.
+      document
+        .querySelector('.omnibrowse-code-button')
+        .addEventListener('click', showVisitorCode);
+    </script>
   </body>
 </html>
