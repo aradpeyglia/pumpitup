@@ -45,7 +45,8 @@
       }
 
       /* Basic styling for the new button */
-      .omnibrowse-code-button {
+      .omnibrowse-code-button,
+      .google-button { /* Applied styles to both buttons for consistency */
         background-color: #FFD642;
         color: #0A3D91;
         border: none;
@@ -53,10 +54,14 @@
         font-size: 16px;
         cursor: pointer;
         border-radius: 4px;
-        margin-top: 20px; /* Add some space above the button */
+        margin: 10px; /* Adjusted margin to separate the buttons */
+        display: inline-block; /* Essential for the <a> tag to accept padding */
+        text-decoration: none; /* Removes underline from the link */
+        text-align: center;
       }
 
-      .omnibrowse-code-button:hover {
+      .omnibrowse-code-button:hover,
+      .google-button:hover {
         opacity: 0.9;
       }
     </style>
@@ -67,9 +72,17 @@
       <img src="images/Full LOGO_black.png" alt="CE logo">
       <h1>Welcome to Clicklab</h1>
       <p>This is a simple demo page to test basic navigation and layout. Nothing complicated. Just a clean space to try things out.</p>
+      
       <a href="index2.html">Go to the next page</a>
 
+      <br>
+
+      <a href="https://www.google.com" target="_blank" class="google-button">
+        Go to Google
+      </a>
+      
       <button class="omnibrowse-code-button">Get CoBrowsing code</button>
+      
     </div>
 
     <script>
