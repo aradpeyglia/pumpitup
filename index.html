@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <script async src="https://api.glia.com/salemove_integration.js"></script>
     <title>Clicklab</title>
@@ -46,7 +46,8 @@
 
       /* Basic styling for the new button */
       .omnibrowse-code-button,
-      .google-button { 
+      .google-button,
+      .language-toggle-button { 
         background-color: #FFD642;
         color: #0A3D91;
         border: none;
@@ -61,7 +62,8 @@
       }
 
       .omnibrowse-code-button:hover,
-      .google-button:hover {
+      .google-button:hover,
+      .language-toggle-button:hover {
         opacity: 0.9;
       }
     </style>
@@ -91,9 +93,29 @@
       
       <button class="omnibrowse-code-button">Get CoBrowsing code</button>
       
+      <button class="language-toggle-button">Switch to Spanish</button>
+      
     </div>
 
     <script>
+      function toggleLanguage() {
+        const html = document.documentElement;
+        const h1 = document.querySelector('h1');
+        const button = document.querySelector('.language-toggle-button');
+        
+        if (html.lang === 'en') {
+          html.lang = 'es';
+          h1.textContent = 'Bienvenido a Clicklab';
+          button.textContent = 'Switch to English';
+        } else {
+          html.lang = 'en';
+          h1.textContent = 'Welcome to Clicklab';
+          button.textContent = 'Switch to Spanish';
+        }
+      }
+
+      document.querySelector('.language-toggle-button').addEventListener('click', toggleLanguage);
+
       function showVisitorCode() {
         // Create the custom Glia HTML element for the visitor code
         var code = document.createElement('sm-visitor-code');
