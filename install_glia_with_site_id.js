@@ -9,7 +9,7 @@ var installGlia = function(siteId, callback) {
     scriptElement.addEventListener('load', callback);
   }
   
-  document.body.append(scriptElement);
+  document.head.appendChild(scriptElement);
 };
 
 /* 
