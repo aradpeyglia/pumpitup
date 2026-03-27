@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- UTF-8 so any visible title or future text renders correctly -->
+    <meta charset="UTF-8" />
+    <!-- Viewport for predictable behavior on phones/tablets when the PDF viewer chrome appears -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Browser tab title only — the page content is exclusively the embedded PDF -->
+    <title>SCIF Survey and Polls Consent Script</title>
+    <style>
+      /*
+       * Reset margins/padding so the iframe can truly fill the viewport with no chrome from our page.
+       */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      /*
+       * Full-viewport iframe: this is the sole “content” of the page — the PDF is loaded inside the browser’s PDF UI.
+       */
+      iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      PDF lives next to this HTML file in the pumpitup folder. Spaces in the filename are percent-encoded in the URL so all servers resolve it reliably.
+      title: accessibility for screen readers when focus lands on the frame.
+    -->
+    <iframe
+      src="SCIF%20Survey%20and%20Polls%20Consent%20Script.pdf"
+      title="SCIF Survey and Polls Consent Script PDF"
+    ></iframe>
+  </body>
+</html>
