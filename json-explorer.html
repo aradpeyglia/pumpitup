@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Explorer — grouped &amp; colorized</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+    <style>
+      /*
+       * Page chrome: dark theme so colored tokens pop; generous spacing for scanning hierarchy.
+       */
+      :root {
+        --bg: #0f1419;
+        --panel: #1a2332;
+        --border: #2d3a4f;
+        --key: #c792ea;
+        --string: #c3e88d;
+        --number: #f78c6c;
+        --boolean: #82aaff;
+        --null: #546e7a;
+        --punct: #89ddff;
+        --label-obj: #ffcb6b;
+        --label-arr: #f07178;
+        --depth-0: #e3b341;
+        --depth-1: #7c4dff;
+        --depth-2: #26a69a;
+        --depth-3: #ef5350;
+        --depth-4: #42a5f5;
+        --muted: #8b9eb3;
+        --link: #ffd54f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: #e6edf3;
+        font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      /*
+       * Top bar: title, short explanation, nav back to site.
+       */
+      header {
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 1.25rem;
+      }
+
+      header h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.85rem;
+        max-width: 52rem;
+      }
+
+      .nav-links {
+        margin-top: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+      }
+
+      .nav-links a {
+        color: var(--link);
+        font-size: 0.85rem;
+      }
+
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 1.25rem;
+      }
+
+      /*
+       * Legend: maps visual roles (parent, child, key, value types) to colors so the tree is scannable.
+       */
+      .legend {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .legend h2 {
+        margin: 0 0 0.75rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.5rem 1rem;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      .controls {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .controls button {
+        background: var(--label-obj);
+        color: #1a1a1a;
+        border: none;
+        padding: 0.45rem 0.9rem;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .controls button:hover {
+        filter: brightness(1.08);
+      }
+
+      .controls .hint {
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      /*
+       * JSON output panel: nested blocks get a colored left stripe by depth (parent/child grouping).
+       */
+      .json-panel {
+        background: #0d1117;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-x: auto;
+      }
+
+      .json-block {
+        margin: 0;
+        padding-left: 0;
+      }
+
+      /* Each nesting level shifts right; border color cycles by depth for “family” grouping. */
+      .json-nest {
+        margin: 0.15rem 0 0.15rem 0;
+        padding-left: 1.1rem;
+        border-left: 3px solid var(--depth-color, var(--depth-0));
+      }
+
+      .json-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.15rem 0.35rem;
+        margin: 0.2rem 0;
+      }
+
+      /* Small chip labels: shows whether this branch is an object (parent of keys) or array (ordered children). */
+      .type-badge {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
+        font-weight: 700;
+        vertical-align: middle;
+      }
+
+      .type-badge.object {
+        background: rgba(255, 203, 107, 0.2);
+        color: var(--label-obj);
+      }
+
+      .type-badge.array {
+        background: rgba(240, 113, 120, 0.2);
+        color: var(--label-arr);
+      }
+
+      .json-key {
+        color: var(--key);
+        font-weight: 600;
+      }
+
+      .json-colon {
+        color: var(--punct);
+      }
+
+      .json-string {
+        color: var(--string);
+      }
+
+      .json-number {
+        color: var(--number);
+      }
+
+      .json-boolean {
+        color: var(--boolean);
+      }
+
+      .json-null {
+        color: var(--null);
+        font-style: italic;
+      }
+
+      .json-brace {
+        color: var(--punct);
+        font-weight: 600;
+      }
+
+      .json-comma {
+        color: var(--muted);
+      }
+
+      .err {
+        color: #f07178;
+        padding: 0.5rem;
+      }
+
+      /* Visible label for the JSON textarea (avoids screen-reader-only class without CSS). */
+      .input-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>JSON Explorer</h1>
+      <p>
+        Sample data is rendered as a nested tree: <strong>objects</strong> and <strong>arrays</strong> are grouped blocks;
+        <strong>keys</strong> and <strong>values</strong> use distinct colors; depth striping shows
+        <strong>parent → child</strong> relationships. Paste your own JSON below and click Render.
+      </p>
+      <nav class="nav-links" aria-label="Site">
+        <a href="index.html">Page 1</a>
+        <a href="index2.html">Page 2</a>
+        <a href="index3.html">Page 3</a>
+        <a href="applet.html">Chill Applet</a>
+        <a href="scif-survey-polls-consent.html">SCIF consent PDF</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="legend" aria-labelledby="legend-title">
+        <h2 id="legend-title">Color key</h2>
+        <div class="legend-grid">
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--key)"></span>
+            <span><strong>Key</strong> — property name (child label under a parent object)</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--string)"></span>
+            <span><strong>String value</strong></span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--number)"></span>
+            <span><strong>Number value</strong></span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--boolean)"></span>
+            <span><strong>Boolean value</strong></span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--null)"></span>
+            <span><strong>null</strong></span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--label-obj)"></span>
+            <span><strong>Object</strong> — parent block of keyed children</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--label-arr)"></span>
+            <span><strong>Array</strong> — ordered list of child values</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch" style="background: var(--punct)"></span>
+            <span><strong>Brackets &amp; punctuation</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <div class="controls">
+        <button type="button" id="btnSample">Load sample JSON</button>
+        <button type="button" id="btnRender">Render from box</button>
+        <span class="hint">Invalid JSON shows an error in the panel.</span>
+      </div>
+
+      <label for="jsonInput" class="input-label">JSON source (paste valid JSON, then Render)</label>
+      <textarea
+        id="jsonInput"
+        rows="8"
+        style="width: 100%; font-family: inherit; font-size: 0.8rem; background: var(--panel); color: #e6edf3; border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; resize: vertical;"
+        placeholder="Paste JSON here…"
+      ></textarea>
+
+      <div id="out" class="json-panel" role="region" aria-label="Colorized JSON tree"></div>
+    </main>
+
+    <script>
+      /*
+       * Demo payload: categories, nested objects, arrays, mixed primitives — exercises all visual roles.
+       */
+      var SAMPLE_JSON = {
+        site: "Clicklab",
+        version: 2,
+        active: true,
+        meta: {
+          category: "demo",
+          tags: ["demo", "json", "ui"],
+          metrics: { views: 1250, bounceRate: 0.22 },
+        },
+        pages: [
+          { id: "home", path: "/index.html", featured: false },
+          { id: "applet", path: "/applet.html", featured: true },
+        ],
+        settings: { theme: null, notifications: true },
+      };
+
+      /*
+       * Depth stripe colors rotate so sibling nesting levels stay visually distinct.
+       */
+      var DEPTH_COLORS = [
+        "var(--depth-0)",
+        "var(--depth-1)",
+        "var(--depth-2)",
+        "var(--depth-3)",
+        "var(--depth-4)",
+      ];
+
+      /**
+       * Creates a DOM element with optional class and text (text is plain, safe).
+       * @param {string} tag - HTML tag name
+       * @param {string} [cls] - CSS class(es)
+       * @param {string} [text] - textContent
+       * @returns {HTMLElement}
+       */
+      function el(tag, cls, text) {
+        var node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+      }
+
+      /**
+       * Wraps a subtree in a nest container with depth-based left border color.
+       * @param {number} depth - 0 = root children
+       * @returns {HTMLElement}
+       */
+      function makeNest(depth) {
+        var nest = el("div", "json-nest");
+        nest.style.setProperty("--depth-color", DEPTH_COLORS[depth % DEPTH_COLORS.length]);
+        return nest;
+      }
+
+      /**
+       * Renders a JSON value recursively into the given container.
+       * @param {*} value - any JSON-serializable value
+       * @param {HTMLElement} container - parent DOM node
+       * @param {number} depth - nesting depth for stripes
+       * @param {string|null} key - property name if this value is an object entry
+       */
+      function renderValue(value, container, depth, key) {
+        var line = el("div", "json-line");
+
+        if (key !== null) {
+          line.appendChild(el("span", "json-key", JSON.stringify(key)));
+          line.appendChild(el("span", "json-colon", ":"));
+        }
+
+        if (value === null) {
+          line.appendChild(el("span", "json-null", "null"));
+          container.appendChild(line);
+          return;
+        }
+
+        if (typeof value === "string") {
+          line.appendChild(el("span", "json-string", JSON.stringify(value)));
+          container.appendChild(line);
+          return;
+        }
+
+        if (typeof value === "number") {
+          line.appendChild(el("span", "json-number", String(value)));
+          container.appendChild(line);
+          return;
+        }
+
+        if (typeof value === "boolean") {
+          line.appendChild(el("span", "json-boolean", value ? "true" : "false"));
+          container.appendChild(line);
+          return;
+        }
+
+        if (Array.isArray(value)) {
+          var arrOpen = el("span", "type-badge array", "array");
+          line.appendChild(arrOpen);
+          line.appendChild(el("span", "json-brace", "["));
+          container.appendChild(line);
+
+          var inner = makeNest(depth);
+          value.forEach(function (item, i) {
+            renderValue(item, inner, depth + 1, null);
+            if (i < value.length - 1) inner.appendChild(el("span", "json-comma", ","));
+          });
+          container.appendChild(inner);
+          container.appendChild(el("div", "json-line", "")).appendChild(el("span", "json-brace", "]"));
+          return;
+        }
+
+        if (typeof value === "object") {
+          var keys = Object.keys(value);
+          var objOpen = el("span", "type-badge object", "object");
+          line.appendChild(objOpen);
+          line.appendChild(el("span", "json-brace", "{"));
+          container.appendChild(line);
+
+          var innerObj = makeNest(depth);
+          keys.forEach(function (k, i) {
+            renderValue(value[k], innerObj, depth + 1, k);
+            if (i < keys.length - 1) innerObj.appendChild(el("span", "json-comma", ","));
+          });
+          container.appendChild(innerObj);
+          container.appendChild(el("div", "json-line", "")).appendChild(el("span", "json-brace", "}"));
+          return;
+        }
+
+        line.appendChild(el("span", "json-string", JSON.stringify(String(value))));
+        container.appendChild(line);
+      }
+
+      /**
+       * Parses JSON string and mounts tree into #out; on failure shows .err message.
+       * @param {string} raw - JSON text
+       */
+      function renderFromText(raw) {
+        var out = document.getElementById("out");
+        out.innerHTML = "";
+        try {
+          var data = JSON.parse(raw);
+          var root = el("div", "json-block");
+          renderValue(data, root, 0, null);
+          out.appendChild(root);
+        } catch (e) {
+          out.appendChild(el("div", "err", "Invalid JSON: " + e.message));
+        }
+      }
+
+      document.getElementById("btnSample").addEventListener("click", function () {
+        document.getElementById("jsonInput").value = JSON.stringify(SAMPLE_JSON, null, 2);
+        renderFromText(document.getElementById("jsonInput").value);
+      });
+
+      document.getElementById("btnRender").addEventListener("click", function () {
+        renderFromText(document.getElementById("jsonInput").value.trim());
+      });
+
+      // Initial load: show sample in textarea and tree
+      document.getElementById("jsonInput").value = JSON.stringify(SAMPLE_JSON, null, 2);
+      renderFromText(document.getElementById("jsonInput").value);
+    </script>
+  </body>
+</html>
