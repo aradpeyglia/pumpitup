@@ -66,6 +66,53 @@
       .language-toggle-button:hover {
         opacity: 0.9;
       }
+
+      /* Co-browsing test block: keep inputs readable on the blue page background. */
+      .cobrowsing-test-section {
+        max-width: 640px;
+        margin: 40px auto 0;
+        text-align: left;
+      }
+
+      .cobrowsing-test-section h2 {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .cobrowsing-test-block {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid #FFD642;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+
+      .cobrowsing-test-block p.description {
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0 0 12px;
+        color: #e8eef8;
+        text-align: left;
+      }
+
+      .cobrowsing-test-block label {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 6px;
+        text-align: left;
+      }
+
+      .cobrowsing-test-block input[type="text"] {
+        width: 100%;
+        max-width: 400px;
+        padding: 8px 10px;
+        font-size: 16px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+        color: #0A3D91;
+      }
     </style>
   </head>
 
@@ -74,6 +121,53 @@
       <img src="images/Full LOGO_black.png" alt="CE logo">
       <h1>Welcome to Clicklab</h1>
       <p>This is a simple demo page to test basic navigation and layout. Nothing complicated. Just a clean space to try things out.</p>
+
+      <!--
+        Co-browsing Glia class tests: each wrapper div uses a different sm_cobrowsing_* class
+        so you can verify behavior (masking, hiding, disabled handling) in a session.
+      -->
+      <div class="cobrowsing-test-section">
+        <h2>Co-browsing class tests</h2>
+
+        <!-- Masked: agent/session should not show raw value (masked in co-browse). -->
+        <div class="cobrowsing-test-block sm_cobrowsing_masked_field">
+          <p class="description">
+            <strong>Class: <code>sm_cobrowsing_masked_field</code></strong> — Use this to test
+            <em>masking</em>: the field is in a co-browse–sensitive area; the value should be
+            obscured for the operator (e.g. password-style masking), not shown in plain text.
+          </p>
+          <form>
+            <label for="masked-demo">Masked / sensitive input</label>
+            <input id="masked-demo" name="masked_demo" type="text" placeholder="Type to test masking" autocomplete="off">
+          </form>
+        </div>
+
+        <!-- Hidden: field should be omitted or not visible in co-browse. -->
+        <div class="cobrowsing-test-block sm_cobrowsing_hidden_field">
+          <p class="description">
+            <strong>Class: <code>sm_cobrowsing_hidden_field</code></strong> — Use this to test
+            <em>hiding</em>: this block should be excluded or hidden from the co-browse view so
+            the operator does not see it at all.
+          </p>
+          <form>
+            <label for="hidden-demo">Hidden from co-browse (test)</label>
+            <input id="hidden-demo" name="hidden_demo" type="text" placeholder="Type to test hidden behavior" autocomplete="off">
+          </form>
+        </div>
+
+        <!-- Disabled: co-browse should treat this as non-interactive / not relay input. -->
+        <div class="cobrowsing-test-block sm_cobrowsing_disabled_field">
+          <p class="description">
+            <strong>Class: <code>sm_cobrowsing_disabled_field</code></strong> — Use this to test
+            <em>disabled</em>: the area is non-interactive for co-browse; the visitor may still
+            see it locally, but the session should not treat it as a live form field to mirror.
+          </p>
+          <form>
+            <label for="disabled-demo">Disabled co-browse field (test)</label>
+            <input id="disabled-demo" name="disabled_demo" type="text" value="Read-only for co-browse test" disabled>
+          </form>
+        </div>
+      </div>
       
       <a href="index2.html">Go to Page 2</a>
 
