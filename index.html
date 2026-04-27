@@ -47,7 +47,8 @@
       /* Basic styling for the new button */
       .omnibrowse-code-button,
       .google-button,
-      .language-toggle-button { 
+      .language-toggle-button,
+      .route-to-bot {
         background-color: #FFD642;
         color: #0A3D91;
         border: none;
@@ -63,7 +64,8 @@
 
       .omnibrowse-code-button:hover,
       .google-button:hover,
-      .language-toggle-button:hover {
+      .language-toggle-button:hover,
+      .route-to-bot:hover {
         opacity: 0.9;
       }
 
@@ -192,6 +194,9 @@
       <button class="omnibrowse-code-button">Get CoBrowsing code</button>
       
       <button class="language-toggle-button">Switch to Spanish</button>
+
+      <!-- Glia / automation hook: targets this element by class `route-to-bot`. -->
+      <button type="button" class="route-to-bot">Route to bot</button>
       
       <div style="margin-top: 30px;">
         <h3>Sample Iframe Area</h3>
