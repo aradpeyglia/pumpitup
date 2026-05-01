@@ -48,7 +48,8 @@
       .omnibrowse-code-button,
       .google-button,
       .language-toggle-button,
-      .route-to-bot {
+      .route-to-bot,
+      .hash-route-index5-button {
         background-color: #FFD642;
         color: #0A3D91;
         border: none;
@@ -65,7 +66,8 @@
       .omnibrowse-code-button:hover,
       .google-button:hover,
       .language-toggle-button:hover,
-      .route-to-bot:hover {
+      .route-to-bot:hover,
+      .hash-route-index5-button:hover {
         opacity: 0.9;
       }
 
@@ -168,6 +170,12 @@
 
       <!-- Glia / automation hook: targets this element by class `route-to-bot`. -->
       <button type="button" class="route-to-bot">Route to bot</button>
+
+      <!--
+        Sets the URL hash to #/index5.html (same pattern as typing .../pumpitup/#/index5.html).
+        The script at the bottom of this file watches the hash and opens index5.html (popup or same tab).
+      -->
+      <a href="#/index5.html" class="hash-route-index5-button">Page 5 via hash (#/index5.html)</a>
       
       <div style="margin-top: 30px;">
         <h3>Sample Iframe Area</h3>
