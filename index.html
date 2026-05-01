@@ -265,29 +265,64 @@
         .addEventListener('click', showVisitorCode);
 
       /*
-        GitHub Pages only receives the path before '#'. Visiting
-        .../pumpitup/#/index5.html still loads index.html; this handler reads the
-        hash and opens index5.html in a new window. Popup blockers may block
-        window.open when there was no direct user click—in that case we fall back
-        to navigating in this tab.
+        Hash routes (GitHub Pages):
+
+        The server never sees characters after '#'. A URL like
+        https://user.github.io/repo/#/index5.html still loads this page (index).
+
+        To KEEP '#/index5.html' visible in the address bar for testing:
+        - Do NOT navigate this tab to index5.html (that replaces the URL and removes the hash).
+        - Rewrite the visible path with history.replaceState so 'index.html' is not stuck before
+          the hash when someone landed on .../index.html#/...
+        - Open index5.html only in a popup. If the popup is blocked, show a note here — the hash
+          stays put so your integration still sees the URL you intended.
+
+        Testing another route later: duplicate this pattern — match location.hash, replaceState to
+        the canonical '#/your/path', optionally window.open the target page without assigning.
       */
       (function hashRouteToIndex5() {
+        /** Shows .../repo/#/index5.html (drops trailing index.html from pathname when present). */
+        function normalizeVisibleUrlForIndex5HashRoute() {
+          var pathname = window.location.pathname.replace(/\/?index\.html$/i, '');
+          if (!pathname.endsWith('/')) {
+            pathname += '/';
+          }
+          window.history.replaceState(null, '', pathname + '#/index5.html');
+        }
+
+        /** Opens Page 5 in a new window; parent tab keeps '#/index5.html' in the bar. */
         function maybeOpenIndex5FromHash() {
           var hash = window.location.hash;
-          // Accept #/index5.html or #/index5 for convenience.
           if (hash !== '#/index5.html' && hash !== '#/index5') {
             return;
           }
+
+          normalizeVisibleUrlForIndex5HashRoute();
+
           var targetUrl = new URL('index5.html', window.location.href).href;
           var popup = window.open(
             targetUrl,
             'index5_popup',
             'noopener,noreferrer,width=720,height=540'
           );
+
           if (!popup || popup.closed) {
-            window.location.assign('index5.html');
+            var noteId = 'hash-route-popup-blocked-note';
+            if (!document.getElementById(noteId)) {
+              var note = document.createElement('p');
+              note.id = noteId;
+              note.textContent =
+                'Popup blocked — allow popups for this site to open Page 5 in a new window. ' +
+                'This tab keeps #/index5.html in the address bar on purpose.';
+              note.style.cssText =
+                'position:fixed;bottom:12px;left:50%;transform:translateX(-50%);max-width:420px;' +
+                'margin:0;padding:10px 14px;background:#FFD642;color:#0A3D91;font-size:14px;' +
+                'border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.25);z-index:99999;text-align:center;';
+              document.body.appendChild(note);
+            }
           }
         }
+
         window.addEventListener('hashchange', maybeOpenIndex5FromHash);
         maybeOpenIndex5FromHash();
       })();
