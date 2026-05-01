@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <nav>
+        <a href="#/home">Home</a> | 
+        <a href="#/flows/consumer/personal-info">Personal Info</a> | 
+        <a href="#/settings">Settings</a>
+    </nav>
+
+    <div id="app" style="margin-top: 20px; padding: 20px; border: 1px solid #ccc;">
+        <h3>Welcome</h3>
+        <p>Click a link above to change the "view".</p>
+    </div>
+
+    <script>
+        function handleRoute() {
+            const path = window.location.hash; // Gets the #/part/of/url
+            const content = document.getElementById('app');
+
+            if (path === '#/flows/consumer/personal-info') {
+                content.innerHTML = "<h2>Personal Info Page</h2><p>This is where the form would go.</p>";
+            } else if (path === '#/settings') {
+                content.innerHTML = "<h2>Settings</h2><p>Adjust your preferences here.</p>";
+            } else {
+                content.innerHTML = "<h2>Home</h2><p>Welcome to the main dashboard.</p>";
+            }
+        }
+
+        // Listen for the hash change event
+        window.addEventListener('hashchange', handleRoute);
+
+        // Run on initial load to catch the current hash
+        handleRoute();
+    </script>
+</body>
+</html>
