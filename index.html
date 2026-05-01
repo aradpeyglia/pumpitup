@@ -255,6 +255,34 @@
       document
         .querySelector('.omnibrowse-code-button')
         .addEventListener('click', showVisitorCode);
+
+      /*
+        GitHub Pages only receives the path before '#'. Visiting
+        .../pumpitup/#/index5.html still loads index.html; this handler reads the
+        hash and opens index5.html in a new window. Popup blockers may block
+        window.open when there was no direct user click—in that case we fall back
+        to navigating in this tab.
+      */
+      (function hashRouteToIndex5() {
+        function maybeOpenIndex5FromHash() {
+          var hash = window.location.hash;
+          // Accept #/index5.html or #/index5 for convenience.
+          if (hash !== '#/index5.html' && hash !== '#/index5') {
+            return;
+          }
+          var targetUrl = new URL('index5.html', window.location.href).href;
+          var popup = window.open(
+            targetUrl,
+            'index5_popup',
+            'noopener,noreferrer,width=720,height=540'
+          );
+          if (!popup || popup.closed) {
+            window.location.assign('index5.html');
+          }
+        }
+        window.addEventListener('hashchange', maybeOpenIndex5FromHash);
+        maybeOpenIndex5FromHash();
+      })();
     </script>
   </body>
 </html>
